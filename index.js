@@ -1,19 +1,24 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const SHA256 = require("crypto-js/sha256");
 const bodyParser = require('body-parser');
+const path = require('path');
 
+const port = 3000;
 const nonce_max = 10000;
 const nonce_min = 15000;
 
+app.use(express.static('./assets'));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 
 app.get('/', (req,res) =>{
 	res.sendFile(__dirname + '/index.html');
 });
 
 app.post('/hash', (req,res) => {
-	console.log('hash');
 	let value = req.body.value;
 	let hash = SHA256(value).toString();
 	res.send({
@@ -32,7 +37,6 @@ app.get('/genesis', (req,res) => {
 });
 
 app.post('/addnewblock', (req,res) => {
-	console.log('add new block');
 	let block = req.body.block;
 	
 	var newBlock = ++block;
@@ -50,6 +54,7 @@ app.post('/addnewblock', (req,res) => {
 	})
 });
 
-app.listen(3000,()=>{
-	console.log('app is started');
+
+app.listen(port,()=>{
+	console.log('Block chain application has statred on port'+port);
 });
