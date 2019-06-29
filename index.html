@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <title>Block chain</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+    	<div class="container">
+	  		<a class="navbar-brand" href="/">Simple Blockchain </a>
+    	</div>
+	</nav>
+	<div class="container">
+		
+		<div class="card mt-4">
+		  <div class="card-body">
+		    <h5 class="card-title">Genesis block</h5>
+		    <form>
+				<div class="form-group row">
+					<label class="col-sm-2 col-form-label">Block</label>
+				      <div class="col-sm-10 input-group mb-2">
+				        <div class="input-group-prepend">
+				          <div class="input-group-text">#</div>
+				        </div>
+				        <input type="text" class="form-control block" placeholder="0" value="0">
+				      </div>
+				</div>
+				<div class="form-group row">
+					<label for="nonce" class="col-sm-2 col-form-label">nonce</label>
+					<div class="col-sm-10">
+					  <input type="number" class="form-control nonce" placeholder="00">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="data" class="col-sm-2 col-form-label">data</label>
+					<div class="col-sm-10">
+					  <textarea class="form-control data" rows="5" placeholder=""></textarea>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="prev" class="col-sm-2 col-form-label">prev</label>
+					<div class="col-sm-10">
+					  <input type="text" class="form-control prev" placeholder="0000">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="hash" class="col-sm-2 col-form-label">hash</label>
+					<div class="col-sm-10">
+					  <input type="text" readonly class="form-control hash" placeholder="0000">
+					</div>
+				</div>
+			</form>
+		  </div>
+		</div>
+		
+		<div id="add_new_block">
+			<button class="btn btn-block btn-danger mt-4 p-2"> Add New block </button>
+		</div>
+
+	</div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+    	$(document).ready(function(){
+
+			$.ajax({
+			  method: "GET",
+			  url: "/genesis"
+			})
+			.done(function( data ) {
+			    $('.nonce').val(data.nonce);
+			    $('.data').val(data.data);
+			    $('.prev').val(data.prev);
+			    $('.hash').val(data.hash);
+			});
+
+			$('#add_new_block').on('click', () => {
+				$.ajax({
+				  method: "POST",
+				  url: "/hash",
+				  data: { value:
+				  			$('.nonce').val() +
+						    $('.data').val()  +
+						    $('.prev').val()  +
+						    $('.hash').val() 
+						}
+				})
+				.done(function( data ) {
+				    addnewblock(data.hash)
+				});
+
+				function addnewblock(hash, ele) {
+					$.ajax({
+					  method: "POST",
+					  url: "/addnewblock",
+					  data: {  
+					  			block: $('.block').val(),
+						     	prev: $('.hash').val(),
+								nonce: $('.nonce').val(),
+						    	data: $('.data').val(),
+						    	hash: hash
+ 						}
+					})
+					.done(function( data ) {
+					    $('#add_new_block').prepend(`
+							<div class="card mt-4">
+							  <div class="card-body">
+							    <h5 class="card-title">Chain Block</h5>
+							    <form>
+									<div class="form-group row">
+										<label class="col-sm-2 col-form-label">Block</label>
+									      <div class="col-sm-10 input-group mb-2">
+									        <div class="input-group-prepend">
+									          <div class="input-group-text">#</div>
+									        </div>
+									        <input id="block" type="text" class="form-control" placeholder="0" value="${data.block}">
+									      </div>
+									</div>
+									<div class="form-group row">
+										<label for="nonce" class="col-sm-2 col-form-label">nonce</label>
+										<div class="col-sm-10">
+										  <input type="number" class="form-control" id="nonce" placeholder="00" value="${data.value}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label for="data" class="col-sm-2 col-form-label">data</label>
+										<div class="col-sm-10">
+										  <textarea class="form-control" rows="5" id="data" placeholder="">${data.data}</textarea>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label for="prev" class="col-sm-2 col-form-label">prev</label>
+										<div class="col-sm-10">
+										  <input type="text" class="form-control" id="prev" placeholder="0000" value="${data.prev}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label for="hash" class="col-sm-2 col-form-label">hash</label>
+										<div class="col-sm-10">
+										  <input type="text" readonly class="form-control" id="hash" placeholder="0000" value="${data.hash}">
+										</div>
+									</div>
+								    <!-- <a href="#" id="mine" class="btn btn-primary">mine</a> -->
+								</form>
+							  </div>
+							</div>
+					    	`);
+					});
+				}
+
+			});
+
+			// $('#mine').on('click', (e) => {
+			// 	e.preventDefault();
+			// 	console.log('mine');
+			// });
+
+    	});
+    </script>
+  </body>
+</html>
